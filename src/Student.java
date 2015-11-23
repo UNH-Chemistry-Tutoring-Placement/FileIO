@@ -38,4 +38,26 @@ public class Student {
         return builder.toString();
 
     }
+
+    public String getName(){
+        return _name;
+    }
+    public int getYear(){
+        return _year;
+    }
+    public String getEmail(){
+        return _email;
+    }
+    public String getLectureTime(){
+        return _lectureTime;
+    }
+    public String getSex(){
+        return _sex;
+    }
+    public ArrayList<String> getGoodTimes(){
+        return _goodTimes;
+    }
+    public ArrayList<String> getPossibleTimes(){
+        return _possibleTimes;
+    }
 }

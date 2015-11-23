@@ -14,12 +14,15 @@ public class StudentIO {
     private String[] _fileNames;
     private HashMap<String, ArrayList<Student>> allLectures;
     private int numberOfStudents = 0;
+    private SanityChecker sanityChecker;
+    private String logFileName = "problem_students.txt";
 
 
     //+++++++++++++++++++++++++ Constructors ++++++++++++++++++++++++++
     public StudentIO(String[] fileNames){
         _fileNames = fileNames;
         allLectures = new HashMap<>();
+        sanityChecker = new SanityChecker(logFileName);
         parseAll(_fileNames);
         produceStudentFile("students");
     }
@@ -43,9 +46,10 @@ public class StudentIO {
             String line = fileScanner.readLine();
             while( (line = fileScanner.readLine()) != null){
                 Student s = parseBBLine(line, file.getName(),"\",\"");
-                students.add(s);
+                if( s != null )
+                    students.add(s);
             }
-
+            sanityChecker.close();
             return students;
 
         } catch (FileNotFoundException e){
@@ -83,7 +87,17 @@ public class StudentIO {
             }
         }
         numberOfStudents++;
-        return new Student(name, email, fileName,"n/a", year, goodTimes, possibleTimes);
+
+        Student thisStudent = new Student(name, email, fileName,"n/a", year, goodTimes, possibleTimes);
+        sanityChecker.checkStudent( thisStudent );
+        if( sanityChecker.addToRoster(thisStudent) )
+            return thisStudent;
+        else{
+            System.out.println( thisStudent.getName() + " not added to roster. See " + logFileName );
+            return null;
+        }
+
+
     }
 
     public int resolveYear( String year ){
@@ -105,7 +119,7 @@ public class StudentIO {
 
     //=========================== parseEmail() =================================
     private String parseEmail( String email ){
-        Pattern wildcatEmailRegex = Pattern.compile("([a-zA-Z]{1,3}([0-9]+))");
+        Pattern wildcatEmailRegex = Pattern.compile("([a-zA-Z]{1,3}([0-9]+)?)");
         Matcher emailMatcher = wildcatEmailRegex.matcher(email);
 
         if( emailMatcher.find() && !email.contains("@") ) {
