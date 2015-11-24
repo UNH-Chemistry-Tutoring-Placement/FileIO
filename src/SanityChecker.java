@@ -9,7 +9,7 @@ public class SanityChecker {
 
     private File logFile;
     private FileWriter fileWriter;
-    private HashMap<String, ArrayList<String>> errors;
+    private HashMap<Student, ArrayList<String>> errors;
 
     private String emailError = "Incorrect email format ->";
     private String yearError = "Incorrect year format ->";
@@ -95,27 +95,27 @@ public class SanityChecker {
     private void printToLogFile( Student s, int errorCode ) {
 
 
-        if( !errors.containsKey(s.getName())){
-            errors.put( s.getName(), new ArrayList<String>() );
+        if( !errors.containsKey(s)){
+            errors.put( s , new ArrayList<String>() );
         }
 
         switch (errorCode) {
             case 1:
-                errors.get(s.getName()).add( "Not added to roster for: " + emailError
+                errors.get(s).add( "Not added to roster for: " + emailError
                         + " " + s.getEmail() + '\n');
                 break;
             case 2:
-                errors.get(s.getName()).add( "Not added to roster for: " + yearError
+                errors.get(s).add( "Not added to roster for: " + yearError
                         + " " + s.getYear() + '\n');
                 break;
             case 3:
-                errors.get(s.getName()).add( "Warning: " + goodTimeWarning + '\n');
+                errors.get(s).add( "Warning: " + goodTimeWarning + '\n');
                 break;
             case 4:
-                errors.get(s.getName()).add( "Warning: " + possibleTimeWarning + "\n");
+                errors.get(s).add( "Warning: " + possibleTimeWarning + "\n");
                 break;
             case 5:
-                errors.get(s.getName()).add("Not added to roster for: " + noTimesError + '\n');
+                errors.get(s).add("Not added to roster for: " + noTimesError + '\n');
                 break;
             default:
                 System.err.println( "SanityChecker: invalid error code " + errorCode );
@@ -125,11 +125,11 @@ public class SanityChecker {
     }
     public void close(){
         try {
-            Iterator<String> iterator = errors.keySet().iterator();
+            Iterator<Student> iterator = errors.keySet().iterator();
             while( iterator.hasNext() ){
-                String key = iterator.next();
+                Student key = iterator.next();
                 ArrayList<String> contents = errors.get(key);
-                fileWriter.write(key + ":\n");
+                fileWriter.write(key.getName() + " (" + key.getEmail() +")" + ":\n");
                 for (String value: contents){
                     fileWriter.write(value );
                 }
