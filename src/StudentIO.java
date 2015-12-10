@@ -9,7 +9,7 @@ public class StudentIO {
 
     //++++++++++++++++++++ Instance Variables +++++++++++++++++++++++++++
 
-    private final int version = 1;
+    private final int version = 3;
     private final String description = "A bunch of students";
     private String[] _fileNames;
     private HashMap<String, ArrayList<Student>> allLectures;
@@ -25,6 +25,7 @@ public class StudentIO {
         sanityChecker = new SanityChecker(logFileName);
         parseAll(_fileNames);
         produceStudentFile("students");
+        sanityChecker.close();
     }
 
     //++++++++++++++++++++++++++++++ METHODS ++++++++++++++++++++++++++++
@@ -49,7 +50,7 @@ public class StudentIO {
                 if( s != null )
                     students.add(s);
             }
-            sanityChecker.close();
+
             return students;
 
         } catch (FileNotFoundException e){
@@ -88,7 +89,7 @@ public class StudentIO {
         }
         numberOfStudents++;
 
-        Student thisStudent = new Student(name, email, fileName,"n/a", year, goodTimes, possibleTimes);
+        Student thisStudent = new Student(name, email, fileName.replaceAll(".csv", ""),"n/a", year, goodTimes, possibleTimes);
         sanityChecker.checkStudent( thisStudent );
         if( sanityChecker.addToRoster(thisStudent) )
             return thisStudent;
@@ -173,6 +174,9 @@ public class StudentIO {
             File newFile = new File(name);
             if ( newFile.createNewFile()) {
                 BufferedWriter fileOut = new BufferedWriter( new FileWriter( newFile ) );
+                fileOut.append("Student Info Format: " + version + '\n');
+                fileOut.append("Description: " + description + '\n');
+                fileOut.append("Number of students: " + numberOfStudents + "\n");
                 for( String s: _fileNames ){
                     printToFile( allLectures.get(s), fileOut );
                 }
@@ -190,9 +194,6 @@ public class StudentIO {
     //=============================== printToFile =================================
     private void printToFile( ArrayList<Student> students, Writer out ){
         try {
-            out.append("Student Info Format: " + version + '\n');
-            out.append("Description: " + description + '\n');
-            out.append("Number of students: " + numberOfStudents + "\n");
             for (Student student : students) {
                 out.append(student.print());
                 //out.append('\n');

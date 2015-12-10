@@ -22,7 +22,7 @@ public class Student {
 
         builder.append("Name: ").append( _name ).append('\n')
                 .append("Email: ").append( _email ). append('\n')
-                .append("Lecture: ").append(_lectureTime).append('\n')
+                .append("Professor: ").append(_lectureTime).append('\n')
                 .append("Year: ").append(_year).append('\n')
                 .append("Sex: "). append(_sex).append('\n')
                 .append("Number of good times: "). append(_goodTimes.size()).append('\n');
