@@ -16,13 +16,25 @@ public class StudentIO {
     private int numberOfStudents = 0;
     private SanityChecker sanityChecker;
     private String logFileName = "problem_students.txt";
-
+    boolean googleForm = true; // use blackboard if false
+    private ArrayList<String> groupTimes;
+    private ArrayList<String> professors;
 
     //+++++++++++++++++++++++++ Constructors ++++++++++++++++++++++++++
     public StudentIO(String[] fileNames){
+
+        professors = new ArrayList<>();
+
         _fileNames = fileNames;
         allLectures = new HashMap<>();
         sanityChecker = new SanityChecker(logFileName);
+
+        if( fileNames[0].startsWith("-") ){
+            if( fileNames[0].substring(1).equals("bb")){
+                googleForm = false;
+            }
+        }
+
         parseAll(_fileNames);
         produceStudentFile("students");
         sanityChecker.close();
@@ -31,8 +43,94 @@ public class StudentIO {
     //++++++++++++++++++++++++++++++ METHODS ++++++++++++++++++++++++++++
     //=============================== parseAll =================================
     private void parseAll(String[] files){
-        for( String fileName : files )
-            allLectures.put( fileName, parseFromBBCSV( new File( fileName ) ) );
+        for( String fileName : files ) {
+            if( !googleForm )
+                allLectures.put(fileName, parseFromBBCSV(new File(fileName)));
+            else
+                allLectures.put( fileName, parseGoogleForm( new File(fileName )));
+        }
+
+        if( googleForm )
+            makeClassTemplateFile();
+    }
+    //==============================parseGoogleForm=================================
+    private ArrayList<Student> parseGoogleForm( File file ){
+        ArrayList<Student> students = new ArrayList<>();
+
+        BufferedReader fileScanner;
+        try{
+            groupTimes = new ArrayList<>();
+            fileScanner = new BufferedReader( new InputStreamReader( new FileInputStream(file), "utf-8"));
+
+            String line = fileScanner.readLine();
+
+            String[] fields = line.split(",");
+            for( int i = 7; i < fields.length - 2; i++ ){
+                groupTimes.add( fields[i] );
+            }
+            Student s;
+            System.out.println( "Before new lines read ");
+            while( (line = fileScanner.readLine()) != null ){
+
+                s = parseGoogleLine(line);
+
+                students.add( s );
+            }
+            numberOfStudents = students.size();
+            return students;
+        } catch( FileNotFoundException e){
+            System.err.println( "File not found " + e.getMessage());
+            System.exit(1);
+
+        } catch( UnsupportedEncodingException io ){
+            System.err.println( "File encoding not supported " + io.getMessage() );
+            System.exit(1);
+        } catch (IOException e){
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+        return students;
+    }
+
+    private Student parseGoogleLine( String line ){
+
+        String[] fields = line.split(",");
+        String firstName = fields[1];
+        String lastName = fields[2];
+        String email = fields[3];
+        String gender = fields[4];
+        int year = resolveYear(fields[5]);
+        String professor = fields[6];
+
+        if( !professors.contains(professor) )
+            professors.add( professor );
+
+        ArrayList<String> goodTimes = new ArrayList<>();
+        ArrayList<String> possibleTimes = new ArrayList<>();
+
+
+        for( int i = 0; i < groupTimes.size(); i++ ){
+            if( fields[ i + 7 ].equals("Good") ){
+                goodTimes.add( groupTimes.get(i) );
+            }
+            if( fields[i + 7].equals("Possible")){
+                possibleTimes.add(groupTimes.get(i));
+            }
+        }
+        String comments = "";
+        for( int i = 7 + groupTimes.size(); i < fields.length; i++ ) {
+            comments += fields[i];
+        }
+        Student student = new Student( firstName + " " + lastName, email, professor,gender, year, goodTimes, possibleTimes );
+        student.setComment(comments);
+
+        if( sanityChecker.addToRoster(student) ){
+            return student;
+        }
+        else{
+            System.out.println( student.getName() + " not added to roster. See " + logFileName );
+            return null;
+        }
     }
 
     //=============================== parseFromCSV =================================
@@ -101,9 +199,13 @@ public class StudentIO {
 
     }
 
+
+
     public int resolveYear( String year ){
         switch (year){
             case "First-year":
+                return 1;
+            case "Freshman":
                 return 1;
             case "Sophomore":
                 return 2;
@@ -112,6 +214,8 @@ public class StudentIO {
             case "Senior":
                 return 4;
             case "Grad or Special Status":
+                return 5;
+            case "Graduate/Other":
                 return 5;
             default:
                 return 0;
@@ -235,6 +339,30 @@ public class StudentIO {
                 }
             }
         }
+    }
+
+    public void makeClassTemplateFile(){
+        File classFile = new File( "classFile" );
+        try {
+            FileWriter fileWriter = new FileWriter(classFile);
+            fileWriter.write("# Auto generated template \n");
+            fileWriter.write("Class Info Format: 2\n");
+            fileWriter.write("Description: (add description here)\n");
+            fileWriter.write("Number of professors: " + professors.size() + "\n");
+            for( int i = 0; i < professors.size(); i++ ){
+                fileWriter.write("Name: " + professors.get(i) + "\n" );
+            }
+            fileWriter.write( "Number of groups: " + groupTimes.size() + "\n" );
+            for( int i = 0; i < groupTimes.size(); i++ ){
+                fileWriter.write("Name: \n");
+                fileWriter.write("Email: \n");
+                fileWriter.write("Time: " + groupTimes.get(i) + "\n" );
+            }
+            fileWriter.close();
+        } catch( IOException e ){
+            System.err.println( "IO Exception when making class template: " + e.getMessage() );
+        }
+
     }
 
     //=============================== deleteFile =================================

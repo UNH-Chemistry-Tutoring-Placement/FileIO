@@ -134,6 +134,7 @@ public class SanityChecker {
                     fileWriter.write(value );
                 }
                 fileWriter.write('\n');
+                fileWriter.write( "Comments: " + key.getComments() );
             }
             fileWriter.close();
         } catch( IOException e){

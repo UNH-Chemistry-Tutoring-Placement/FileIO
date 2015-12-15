@@ -3,17 +3,22 @@ import java.util.ArrayList;
 public class Student {
 
     private int _year;
-    private String _name, _email, _lectureTime, _sex;
+    private String _name, _email, _professor, _sex;
+    private String _comments = "";
     private ArrayList<String> _goodTimes, _possibleTimes;
 
-    public Student( String name, String email, String lectureTime, String sex, int year, ArrayList<String> goodTimes, ArrayList<String> possibleTimes ){
+    public Student( String name, String email, String professor, String sex, int year, ArrayList<String> goodTimes, ArrayList<String> possibleTimes ){
         _name = name;
         _email = email;
-        _lectureTime = lectureTime;
+        _professor = professor;
         _sex =sex;
         _year = year;
         _goodTimes = goodTimes;
         _possibleTimes = possibleTimes;
+    }
+
+    public void setComment( String comment ){
+        _comments = comment;
     }
 
     public String print(){
@@ -22,7 +27,7 @@ public class Student {
 
         builder.append("Name: ").append( _name ).append('\n')
                 .append("Email: ").append( _email ). append('\n')
-                .append("Professor: ").append(_lectureTime).append('\n')
+                .append("Professor: ").append(_professor).append('\n')
                 .append("Year: ").append(_year).append('\n')
                 .append("Sex: "). append(_sex).append('\n')
                 .append("Number of good times: "). append(_goodTimes.size()).append('\n');
@@ -49,7 +54,7 @@ public class Student {
         return _email;
     }
     public String getLectureTime(){
-        return _lectureTime;
+        return _professor;
     }
     public String getSex(){
         return _sex;
@@ -59,5 +64,8 @@ public class Student {
     }
     public ArrayList<String> getPossibleTimes(){
         return _possibleTimes;
+    }
+    public String getComments(){
+        return _comments;
     }
 }
